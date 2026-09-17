@@ -254,22 +254,32 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════
           CTA BANNER
       ═══════════════════════════════════════════════ */}
-      <section className="bg-gradient-to-r from-[#FF6B35] to-[#ff9f35] dark:from-[#FF79C6] dark:to-[#c084fc] py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Users className="h-10 w-10 text-white/80 mx-auto mb-4" />
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-satoshi">
+      <section className="relative overflow-hidden bg-accent py-20 lg:py-24 transition-colors">
+        {/* Subtle background pattern / glow overlay for depth */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)] pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {/* Icon with glowing backdrop */}
+          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-white/10 backdrop-blur-md mb-6 shadow-inner text-white animate-float">
+            <Users className="h-8 w-8" />
+          </div>
+
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-white font-satoshi tracking-tight max-w-2xl mx-auto">
             Join the Mianwali Student Community
           </h2>
-          <p className="mt-4 max-w-xl mx-auto text-white/80 text-lg">
+
+          <p className="mt-4 max-w-xl mx-auto text-white/90 text-base sm:text-lg leading-relaxed">
             Sign up to upload notes, post confessions, make study requests, and
-            help fellow students.
+            help fellow students grow together.
           </p>
+
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-bold text-[#FF6B35] dark:text-[#FF79C6] hover:bg-white/90 transition-colors shadow-lg"
+              className="group inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-base font-bold text-zinc-900 hover:bg-zinc-100 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5 cursor-pointer"
             >
-              Get Started Free <ArrowRight className="h-5 w-5" />
+              <span>Get Started Free</span>
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
         </div>

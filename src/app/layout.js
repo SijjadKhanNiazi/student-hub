@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
                 <p className="text-xs text-[#2C4A3E]/50 dark:text-gray-500 font-medium">
                   Designed & Developed by{" "}
                   <span className="font-bold text-[#FF6B35] dark:text-[#FF79C6]">
-                    Muhammad Sijjad Khan
+                    Sijjad
                   </span>
                 </p>
               </div>
