@@ -96,6 +96,15 @@ export default async function HomePage() {
       color: "from-rose-500 to-red-600",
       darkColor: "dark:from-rose-400 dark:to-red-500",
     },
+    {
+      title: "Alumni & Senior Career Guidance",
+      description:
+        "Connect with pass-out seniors for mentorship, FYP direction, tech stack advice, and remote job referrals.",
+      href: "/alumni",
+      icon: Users,
+      color: "from-indigo-500 to-cyan-600",
+      darkColor: "dark:from-indigo-400 dark:to-cyan-500",
+    },
   ];
 
   return (

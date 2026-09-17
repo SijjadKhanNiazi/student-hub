@@ -11,6 +11,7 @@ import {
   Sparkles,
   MessageSquarePlus,
   Search,
+  GraduationCap,
   Menu,
   X,
 } from "lucide-react";
@@ -20,6 +21,7 @@ import Image from "next/image";
 const navLinks = [
   { name: "Semesters", href: "/", icon: Home },
   { name: "Requests", href: "/requests", icon: MessageSquarePlus },
+  { name: "Alumni Directory", href: "/alumni", icon: GraduationCap },
   { name: "Lost & Found", href: "/lost-found", icon: Search },
   { name: "Confessions", href: "/confessions", icon: Sparkles },
   { name: "CGPA Calc", href: "/cgpa-calculator", icon: Calculator },
