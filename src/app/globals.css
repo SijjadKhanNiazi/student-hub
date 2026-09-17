@@ -1,26 +1,70 @@
 @import "tailwindcss";
+@import "@uploadthing/react/styles.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand-bg: #FCFBF7;
+  --brand-struct: #2C4A3E;
+  --brand-accent: #FF6B35;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --brand-bg: #14121F;
+  --brand-struct: #E8E4F0;
+  --brand-accent: #FF79C6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  background-color: var(--brand-bg);
+  color: var(--brand-struct);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-plus-jakarta-sans), system-ui, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Font utility classes */
+.font-satoshi {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-weight: 700;
+}
+
+/* Brand utility classes */
+.bg-accent {
+  background-color: var(--brand-accent) !important;
+}
+.text-accent {
+  color: var(--brand-accent) !important;
+}
+.border-accent {
+  border-color: var(--brand-accent) !important;
+}
+
+/* Card glow effect */
+.card-glow {
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card-glow:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
+}
+.dark .card-glow:hover {
+  box-shadow: 0 20px 40px -15px rgba(255, 121, 198, 0.15);
+}
+
+/* Smooth gradient animation for hero */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Subtle float animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
 }
