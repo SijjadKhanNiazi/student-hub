@@ -8,6 +8,7 @@ import {
   Calculator,
   BookOpen,
   Users,
+  Rocket,
 } from "lucide-react";
 import dbConnect from "@/lib/mongodb";
 import Subject from "@/lib/models/Subject";
@@ -85,6 +86,15 @@ export default async function HomePage() {
       icon: Calculator,
       color: "from-amber-500 to-orange-600",
       darkColor: "dark:from-amber-400 dark:to-orange-500",
+    },
+    {
+      title: "FYP Survival Guide",
+      description:
+        "Master your Final Year Project phase by phase—from team formation and defenses to sample PPTs and final submission.",
+      href: "/fyp-guide",
+      icon: Rocket,
+      color: "from-rose-500 to-red-600",
+      darkColor: "dark:from-rose-400 dark:to-red-500",
     },
   ];
 
