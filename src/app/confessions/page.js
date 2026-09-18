@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   Plus,
@@ -10,6 +10,8 @@ import {
   MessageSquareHeart,
   Flame,
   Ghost,
+  Search,
+  X,
 } from "lucide-react";
 import ConfessionCard from "@/app/components/ConfessionCard";
 
@@ -18,6 +20,24 @@ export default function ConfessionsPage() {
 
   const [confessions, setConfessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const debounceTimer = useRef(null);
+
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchQuery(val); // input stays snappy
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedQuery(val.trim().toLowerCase()); // filter fires after 300ms
+    }, 300);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setDebouncedQuery("");
+    clearTimeout(debounceTimer.current);
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [content, setContent] = useState("");
@@ -25,28 +45,28 @@ export default function ConfessionsPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const [isAdmin, setIsAdmin] = useState(false);
-
   const [expandedId, setExpandedId] = useState(null);
-
-useEffect(() => {
-    // fetch current user role
-    const fetchRole = async () => {
-      try {
-        const res = await fetch('/api/me');
-        const data = await res.json();
-        if (res.ok && data.role === 'admin') setIsAdmin(true);
-      } catch (e) {
-        console.error('Failed to fetch user role', e);
-      }
-    };
-    if (isSignedIn) fetchRole();
-  }, [isSignedIn]);
-
   const [commentText, setCommentText] = useState("");
   const [commentAnonymous, setCommentAnonymous] = useState(false);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [likingId, setLikingId] = useState(null);
 
+  // ── fetch role ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isSignedIn) return;
+    const fetchRole = async () => {
+      try {
+        const res = await fetch("/api/me");
+        const data = await res.json();
+        if (res.ok && data.role === "admin") setIsAdmin(true);
+      } catch (e) {
+        console.error("Failed to fetch user role", e);
+      }
+    };
+    fetchRole();
+  }, [isSignedIn]);
+
+  // ── fetch confessions ───────────────────────────────────────────────────
   const fetchConfessions = async () => {
     try {
       setLoading(true);
@@ -64,6 +84,15 @@ useEffect(() => {
     fetchConfessions();
   }, []);
 
+  // ── client-side search filter (runs after debounce settles) ────────────
+  const filtered = useMemo(() => {
+    if (!debouncedQuery) return confessions;
+    return confessions.filter((c) =>
+      c.content?.toLowerCase().includes(debouncedQuery),
+    );
+  }, [confessions, debouncedQuery]);
+
+  // ── handlers ────────────────────────────────────────────────────────────
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
@@ -95,11 +124,10 @@ useEffect(() => {
         method: "POST",
       });
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok)
         setConfessions((prev) =>
           prev.map((c) => (c._id === id ? data.confession : c)),
         );
-      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -142,11 +170,10 @@ useEffect(() => {
         { method: "DELETE" },
       );
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok)
         setConfessions((prev) =>
           prev.map((c) => (c._id === confessionId ? data.confession : c)),
         );
-      }
     } catch (err) {
       console.error(err);
     }
@@ -156,23 +183,20 @@ useEffect(() => {
     if (!confirm("Delete this confession permanently?")) return;
     try {
       const res = await fetch(`/api/confessions/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setConfessions((prev) => prev.filter((c) => c._id !== id));
-      }
+      if (res.ok) setConfessions((prev) => prev.filter((c) => c._id !== id));
     } catch (err) {
       console.error(err);
     }
   };
 
+  // ── render ───────────────────────────────────────────────────────────────
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-5 pb-16">
       {/* ── Hero Banner ── */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-700 via-purple-600 to-indigo-700 p-6 sm:p-7 text-white shadow-lg">
-        {/* Decorative icon — purely background */}
         <div className="absolute -right-8 -bottom-8 opacity-[0.08] pointer-events-none select-none">
           <MessageSquareHeart className="w-52 h-52" />
         </div>
-
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/20 px-3 py-1 text-[11px] font-semibold tracking-wide backdrop-blur-sm">
@@ -187,7 +211,6 @@ useEffect(() => {
               genuine guidance and support from peers.
             </p>
           </div>
-
           {isSignedIn && (
             <button
               onClick={() => setShowModal(true)}
@@ -200,21 +223,71 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* ── Feed bar ── */}
-      <div className="flex items-center justify-between px-1">
+      {/* ── Search + feed bar ── */}
+      <div className="space-y-3">
+        {/* Search input */}
         <div
-          className="flex items-center gap-2 text-xs font-bold"
-          style={{ color: "var(--brand-struct)" }}
+          className="flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 transition-shadow focus-within:ring-2 focus-within:ring-purple-500"
+          style={{
+            backgroundColor:
+              "color-mix(in srgb, var(--brand-struct) 4%, var(--brand-bg))",
+            borderColor:
+              "color-mix(in srgb, var(--brand-struct) 12%, transparent)",
+          }}
         >
-          <Flame className="h-4 w-4 text-orange-500 fill-orange-500" />
-          Recent Confessions Feed
+          <Search
+            className="h-4 w-4 shrink-0"
+            style={{
+              color: "color-mix(in srgb, var(--brand-struct) 35%, transparent)",
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Search confessions..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="flex-1 bg-transparent text-sm focus:outline-none"
+            style={{ color: "var(--brand-struct)" }}
+          />
+          {searchQuery && (
+            <button
+              onClick={clearSearch}
+              className="shrink-0 cursor-pointer rounded-md p-0.5 transition-colors"
+              style={{
+                color:
+                  "color-mix(in srgb, var(--brand-struct) 40%, transparent)",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "var(--brand-struct)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color =
+                  "color-mix(in srgb, var(--brand-struct) 40%, transparent)")
+              }
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
-        <span
-          className="text-xs font-medium"
-          style={{ color: "var(--brand-struct)", opacity: 0.45 }}
-        >
-          {confessions.length} {confessions.length === 1 ? "Post" : "Posts"}
-        </span>
+
+        {/* Feed meta row */}
+        <div className="flex items-center justify-between px-1">
+          <div
+            className="flex items-center gap-2 text-xs font-bold"
+            style={{ color: "var(--brand-struct)" }}
+          >
+            <Flame className="h-4 w-4 text-orange-500 fill-orange-500" />
+            {debouncedQuery
+              ? `Results for "${debouncedQuery}"`
+              : "Recent Confessions Feed"}
+          </div>
+          <span
+            className="text-xs font-medium"
+            style={{ color: "var(--brand-struct)", opacity: 0.45 }}
+          >
+            {filtered.length} {filtered.length === 1 ? "Post" : "Posts"}
+          </span>
+        </div>
       </div>
 
       {/* ── Feed content ── */}
@@ -228,9 +301,9 @@ useEffect(() => {
             Loading confessions feed...
           </p>
         </div>
-      ) : confessions.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div
-          className="rounded-2xl border border-dashed p-14 text-center shadow-sm"
+          className="rounded-2xl border border-dashed p-14 text-center"
           style={{
             borderColor:
               "color-mix(in srgb, var(--brand-struct) 15%, transparent)",
@@ -238,49 +311,84 @@ useEffect(() => {
               "color-mix(in srgb, var(--brand-bg) 80%, var(--brand-struct) 4%)",
           }}
         >
-          <Ghost
-            className="h-10 w-10 mx-auto mb-3"
-            style={{
-              color: "color-mix(in srgb, var(--brand-struct) 20%, transparent)",
-            }}
-          />
-          <p
-            className="font-bold text-sm"
-            style={{ color: "var(--brand-struct)" }}
-          >
-            No confessions yet
-          </p>
-          <p
-            className="text-xs mt-1"
-            style={{ color: "var(--brand-struct)", opacity: 0.5 }}
-          >
-            Be the first to share a thought or start a conversation.
-          </p>
+          {debouncedQuery ? (
+            <>
+              <Search
+                className="h-10 w-10 mx-auto mb-3"
+                style={{
+                  color:
+                    "color-mix(in srgb, var(--brand-struct) 20%, transparent)",
+                }}
+              />
+              <p
+                className="font-bold text-sm"
+                style={{ color: "var(--brand-struct)" }}
+              >
+                No confessions match your search
+              </p>
+              <p
+                className="text-xs mt-1"
+                style={{ color: "var(--brand-struct)", opacity: 0.5 }}
+              >
+                Try a different keyword or{" "}
+                <button
+                  onClick={clearSearch}
+                  className="underline cursor-pointer"
+                  style={{ color: "#9333ea" }}
+                >
+                  clear the search
+                </button>
+                .
+              </p>
+            </>
+          ) : (
+            <>
+              <Ghost
+                className="h-10 w-10 mx-auto mb-3"
+                style={{
+                  color:
+                    "color-mix(in srgb, var(--brand-struct) 20%, transparent)",
+                }}
+              />
+              <p
+                className="font-bold text-sm"
+                style={{ color: "var(--brand-struct)" }}
+              >
+                No confessions yet
+              </p>
+              <p
+                className="text-xs mt-1"
+                style={{ color: "var(--brand-struct)", opacity: 0.5 }}
+              >
+                Be the first to share a thought or start a conversation.
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
-          {confessions.map((confession) => (
-                          <ConfessionCard
-                key={confession._id}
-                confession={confession}
-                isExpanded={expandedId === confession._id}
-                isSignedIn={isSignedIn}
-                isOwner={isSignedIn && confession.isOwner}
-                isAdmin={isAdmin}
-                likingId={likingId}
-                commentText={commentText}
-                commentAnonymous={commentAnonymous}
-                commentSubmitting={commentSubmitting}
-                onToggleExpand={(id) =>
-                  setExpandedId(expandedId === id ? null : id)
-                }
-                onLike={handleLike}
-                onDelete={handleDeleteConfession}
-                onCommentTextChange={setCommentText}
-                onCommentAnonymousChange={setCommentAnonymous}
-                onAddComment={handleAddComment}
-                onDeleteComment={handleDeleteComment}
-              />
+          {filtered.map((confession) => (
+            <ConfessionCard
+              key={confession._id}
+              confession={confession}
+              isExpanded={expandedId === confession._id}
+              isSignedIn={isSignedIn}
+              isOwner={isSignedIn && confession.isOwner}
+              isAdmin={isAdmin}
+              likingId={likingId}
+              commentText={commentText}
+              commentAnonymous={commentAnonymous}
+              commentSubmitting={commentSubmitting}
+              onToggleExpand={(id) =>
+                setExpandedId(expandedId === id ? null : id)
+              }
+              onLike={handleLike}
+              onDelete={handleDeleteConfession}
+              onCommentTextChange={setCommentText}
+              onCommentAnonymousChange={setCommentAnonymous}
+              onAddComment={handleAddComment}
+              onDeleteComment={handleDeleteComment}
+            />
           ))}
         </div>
       )}
@@ -304,25 +412,42 @@ useEffect(() => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal header */}
-            <div>
-              <h2
-                className="text-base font-extrabold tracking-tight font-satoshi"
-                style={{ color: "var(--brand-struct)" }}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2
+                  className="text-base font-extrabold tracking-tight font-satoshi"
+                  style={{ color: "var(--brand-struct)" }}
+                >
+                  Create a Confession
+                </h2>
+                <p
+                  className="text-xs mt-0.5"
+                  style={{ color: "var(--brand-struct)", opacity: 0.5 }}
+                >
+                  Your identity is kept completely private when posting
+                  anonymously.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1.5 rounded-lg cursor-pointer transition-colors shrink-0"
+                style={{
+                  color:
+                    "color-mix(in srgb, var(--brand-struct) 40%, transparent)",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor =
+                    "color-mix(in srgb, var(--brand-struct) 8%, transparent)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "transparent")
+                }
               >
-                Create a Confession
-              </h2>
-              <p
-                className="text-xs mt-0.5"
-                style={{ color: "var(--brand-struct)", opacity: 0.5 }}
-              >
-                Your identity is kept completely private when posting
-                anonymously.
-              </p>
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
             <form onSubmit={handleCreate} className="space-y-4">
-              {/* Textarea */}
               <div>
                 <textarea
                   required
@@ -350,7 +475,6 @@ useEffect(() => {
                 </div>
               </div>
 
-              {/* Anonymous toggle */}
               <label
                 className="flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer select-none"
                 style={{
@@ -381,7 +505,6 @@ useEffect(() => {
                 </div>
               </label>
 
-              {/* Actions */}
               <div className="flex items-center justify-end gap-3 pt-1">
                 <button
                   type="button"
