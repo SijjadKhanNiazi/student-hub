@@ -83,14 +83,14 @@ export default function Navbar() {
                 className="h-8 w-8 object-cover"
               />
             </div>
-            <span className="font-mono text-base tracking-tight inline-flex items-center gap-1.5">
+            <span className=" text-base tracking-tight inline-flex items-center gap-1.5">
               {/* "Student" styling */}
-              <span className="font-extrabold text-white tracking-wider drop-shadow-sm">
+              <span className="font-extrabold   text-emerald-700 tracking-wider drop-shadow-sm">
                 Student
               </span>
 
               {/* "Inn" styling (uses your brand accent with a subtle glowing badge/gradient look) */}
-              <span className="font-bold uppercase text-xs px-2 py-0.5 rounded bg-[var(--brand-accent)]/15 border border-[var(--brand-accent)]/40 text-[var(--brand-accent)] backdrop-blur-sm shadow-[0_0_12px_rgba(var(--brand-accent),0.2)]">
+              <span className="font-medium uppercase text-xs px-2 py-0.5 rounded bg-[var(--brand-accent)]/15 border border-[var(--brand-accent)]/40 text-[var(--brand-accent)] backdrop-blur-sm shadow-[0_0_12px_rgba(var(--brand-accent),0.2)]">
                 Inn
               </span>
             </span>
