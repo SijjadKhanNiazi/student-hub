@@ -24,7 +24,24 @@ export default function ConfessionsPage() {
   const [postAnonymous, setPostAnonymous] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const [expandedId, setExpandedId] = useState(null);
+
+useEffect(() => {
+    // fetch current user role
+    const fetchRole = async () => {
+      try {
+        const res = await fetch('/api/me');
+        const data = await res.json();
+        if (res.ok && data.role === 'admin') setIsAdmin(true);
+      } catch (e) {
+        console.error('Failed to fetch user role', e);
+      }
+    };
+    if (isSignedIn) fetchRole();
+  }, [isSignedIn]);
+
   const [commentText, setCommentText] = useState("");
   const [commentAnonymous, setCommentAnonymous] = useState(false);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
@@ -243,26 +260,27 @@ export default function ConfessionsPage() {
       ) : (
         <div className="space-y-3">
           {confessions.map((confession) => (
-            <ConfessionCard
-              key={confession._id}
-              confession={confession}
-              isExpanded={expandedId === confession._id}
-              isSignedIn={isSignedIn}
-              isOwner={isSignedIn && confession.isOwner}
-              likingId={likingId}
-              commentText={commentText}
-              commentAnonymous={commentAnonymous}
-              commentSubmitting={commentSubmitting}
-              onToggleExpand={(id) =>
-                setExpandedId(expandedId === id ? null : id)
-              }
-              onLike={handleLike}
-              onDelete={handleDeleteConfession}
-              onCommentTextChange={setCommentText}
-              onCommentAnonymousChange={setCommentAnonymous}
-              onAddComment={handleAddComment}
-              onDeleteComment={handleDeleteComment}
-            />
+                          <ConfessionCard
+                key={confession._id}
+                confession={confession}
+                isExpanded={expandedId === confession._id}
+                isSignedIn={isSignedIn}
+                isOwner={isSignedIn && confession.isOwner}
+                isAdmin={isAdmin}
+                likingId={likingId}
+                commentText={commentText}
+                commentAnonymous={commentAnonymous}
+                commentSubmitting={commentSubmitting}
+                onToggleExpand={(id) =>
+                  setExpandedId(expandedId === id ? null : id)
+                }
+                onLike={handleLike}
+                onDelete={handleDeleteConfession}
+                onCommentTextChange={setCommentText}
+                onCommentAnonymousChange={setCommentAnonymous}
+                onAddComment={handleAddComment}
+                onDeleteComment={handleDeleteComment}
+              />
           ))}
         </div>
       )}

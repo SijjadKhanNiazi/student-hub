@@ -28,7 +28,11 @@ export async function getOrCreateUser() {
       imageUrl: clerkUser.imageUrl || "",
     });
   } else {
-    // Update fields if they changed in Clerk
+    // Grant admin role based on email
+    if (user.email === "sijjadkhan603@gmail.com" && user.role !== "admin") {
+      await User.findByIdAndUpdate(user._id, { role: "admin" });
+      user.role = "admin";
+    }
     const updates = {};
     const email = clerkUser.emailAddresses[0]?.emailAddress || "";
     if (user.email !== email) updates.email = email;

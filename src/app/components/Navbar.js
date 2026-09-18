@@ -14,6 +14,7 @@ import {
   GraduationCap,
   Menu,
   X,
+  LogIn,
 } from "lucide-react";
 import ThemeToggle from "./ui/ThemeToggle";
 import Image from "next/image";
@@ -138,7 +139,7 @@ export default function Navbar() {
           </nav>
 
           {/* ── Right actions ── */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
             <ThemeToggle />
 
             {/* Signed in */}
@@ -146,12 +147,12 @@ export default function Navbar() {
               <UserButton />
             </Show>
 
-            {/* Signed out — desktop only */}
+            {/* Signed out — desktop view (Explicitly forced with sm:flex) */}
             <Show when="signed-out">
               <div className="hidden sm:flex items-center gap-2">
                 <SignInButton mode="modal">
                   <button
-                    className="rounded-lg border px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
                     style={{
                       borderColor:
                         "color-mix(in srgb, var(--brand-struct) 18%, transparent)",
@@ -165,12 +166,13 @@ export default function Navbar() {
                       (e.currentTarget.style.backgroundColor = "transparent")
                     }
                   >
-                    Sign In
+                    <LogIn className="h-3.5 w-3.5" />
+                    <span>Sign In</span>
                   </button>
                 </SignInButton>
                 <SignUpButton mode="modal">
                   <button
-                    className="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-white hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+                    className="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-white hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm"
                     style={{ backgroundColor: "var(--brand-accent)" }}
                   >
                     Sign Up
@@ -254,14 +256,15 @@ export default function Navbar() {
             >
               <SignInButton mode="modal">
                 <button
-                  className="w-full rounded-xl border py-2.5 text-sm font-semibold transition-colors cursor-pointer"
+                  className="w-full rounded-xl border py-2.5 text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
                   style={{
                     borderColor:
                       "color-mix(in srgb, var(--brand-struct) 18%, transparent)",
                     color: "var(--brand-struct)",
                   }}
                 >
-                  Sign In
+                  <LogIn className="h-4 w-4" />
+                  <span>Sign In</span>
                 </button>
               </SignInButton>
               <SignUpButton mode="modal">

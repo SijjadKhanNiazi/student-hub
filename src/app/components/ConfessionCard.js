@@ -80,6 +80,7 @@ export default function ConfessionCard({
   isExpanded,
   isSignedIn,
   isOwner,
+  isAdmin,
   likingId,
   commentText,
   commentAnonymous,
@@ -108,7 +109,7 @@ export default function ConfessionCard({
               day: "numeric",
             })}
           </span>
-          {isOwner && (
+          { (isOwner || isAdmin) && (
             <button
               onClick={() => onDelete(confession._id)}
               title="Delete confession"
