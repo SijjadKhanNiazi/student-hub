@@ -109,7 +109,7 @@ export default function ConfessionCard({
               day: "numeric",
             })}
           </span>
-          { (isOwner || isAdmin) && (
+          {(isOwner || isAdmin) && (
             <button
               onClick={() => onDelete(confession._id)}
               title="Delete confession"
