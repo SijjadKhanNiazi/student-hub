@@ -68,12 +68,27 @@ function CommentAuthor({ isAnonymous, author }) {
     );
   }
 
+  const avatarSrc = author?.imageUrl || DEFAULT_AVATAR;
+  const displayName = author?.name || author?.firstName || "User";
+
   return (
-    <span className="font-bold text-gray-900 dark:text-gray-100 font-satoshi text-xs">
-      {author?.name || "Student"}
-    </span>
+    <div className="flex items-center gap-1.5 text-xs">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={avatarSrc}
+        alt={displayName}
+        className="h-5 w-5 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+        onError={(e) => {
+          e.currentTarget.src = DEFAULT_AVATAR;
+        }}
+      />
+      <span className="font-bold text-gray-900 dark:text-gray-100 font-satoshi">
+        {displayName}
+      </span>
+    </div>
   );
 }
+
 
 export default function ConfessionCard({
   confession,
