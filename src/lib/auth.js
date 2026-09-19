@@ -62,3 +62,14 @@ export async function requireUser() {
   }
   return user;
 }
+
+export async function requireAdmin() {
+  const user = await requireUser();
+  if (user.role !== "admin") {
+    throw new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  return user;
+}

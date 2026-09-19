@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import "./globals.css";
 import ThemeProvider from "./theme-provider";
 import { plusJakartaSans, inter } from "./fonts";
+import WinnerSpotlight from "./components/WinnerSpotlight";
 
 export const metadata = {
   title: "Mianwali Students Hub — Academic Community Platform",

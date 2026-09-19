@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+// Removed client-side React hooks import
 import {
   ArrowRight,
   FolderKanban,
@@ -9,9 +11,13 @@ import {
   BookOpen,
   Users,
   Rocket,
+  Trophy,
 } from "lucide-react";
 import dbConnect from "@/lib/mongodb";
 import Subject from "@/lib/models/Subject";
+import User from "@/lib/models/User";
+import CompetitionMatch from "@/lib/models/CompetitionMatch";
+import WinnerSpotlight from "@/app/components/WinnerSpotlight";
 
 async function getSemesters() {
   try {
@@ -45,8 +51,95 @@ async function getSemesters() {
   }
 }
 
+const SPOTLIGHT_HOURS = 48 * 7;
+const MAX_SPOTLIGHT = 5;
+
+async function getRecentWinners() {
+  try {
+    await dbConnect();
+    const cutoff = new Date(Date.now() - SPOTLIGHT_HOURS * 60 * 60 * 1000);
+    const matches = await CompetitionMatch.find({
+      status: "Completed",
+      winner: { $ne: null },
+      updatedAt: { $gte: cutoff },
+    })
+      .sort({ updatedAt: -1 })
+      .limit(MAX_SPOTLIGHT)
+      .populate("winner", "firstName lastName imageUrl email")
+      .populate("player1", "firstName lastName email")
+      .populate("player2", "firstName lastName email")
+      .populate("votes.candidate", "_id")
+      .lean();
+
+    if (!matches || matches.length === 0) return [];
+
+    return matches
+      .map((match) => {
+        const w = match.winner;
+        if (!w) return null;
+        const fullName =
+          `${w.firstName || ""} ${w.lastName || ""}`.trim() ||
+          w.email ||
+          "Winner";
+        const winnerId = w._id?.toString();
+        const p1Id =
+          match.player1?._id?.toString() || match.player1?.toString();
+        const p2Id =
+          match.player2?._id?.toString() || match.player2?.toString();
+        const loserDoc =
+          winnerId === p1Id
+            ? typeof match.player2 === "object" && match.player2 !== null
+              ? match.player2
+              : null
+            : typeof match.player1 === "object" && match.player1 !== null
+            ? match.player1
+            : null;
+        let opponent = null;
+        if (loserDoc) {
+          const n =
+            `${loserDoc.firstName || ""} ${loserDoc.lastName || ""}`.trim() ||
+            loserDoc.email;
+          if (n) opponent = n;
+        }
+        const getCId = (c) =>
+          typeof c === "object" && c !== null
+            ? c._id?.toString()
+            : c?.toString();
+        const p1Votes = (match.votes || []).filter(
+          (v) => getCId(v.candidate) === p1Id,
+        ).length;
+        const p2Votes = (match.votes || []).filter(
+          (v) => getCId(v.candidate) === p2Id,
+        ).length;
+        return {
+          id: match._id.toString(),
+          completedAt: match.updatedAt,
+          winner: {
+            id: w._id.toString(),
+            name: fullName,
+            imageUrl: w.imageUrl || null,
+            email: w.email || null,
+          },
+          score: {
+            winnerVotes: winnerId === p1Id ? p1Votes : p2Votes,
+            loserVotes: winnerId === p1Id ? p2Votes : p1Votes,
+          },
+          opponent,
+        };
+      })
+      .filter(Boolean);
+  } catch (err) {
+    console.error("Homepage: failed to fetch recent winners", err);
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const semesters = await getSemesters();
+  const [semesters, winners] = await Promise.all([
+    getSemesters(),
+    getRecentWinners(),
+  ]);
+
   const totalSubjects = semesters.reduce((a, s) => a + s.subjectCount, 0);
 
   /* Feature cards that link to each section of the app */
@@ -95,6 +188,15 @@ export default async function HomePage() {
       icon: Rocket,
       color: "from-rose-500 to-red-600",
       darkColor: "dark:from-rose-400 dark:to-red-500",
+    },
+    {
+      title: "Competition",
+      description:
+        "Enter the voting competition, register and vote for the best submission.",
+      href: "/competitions",
+      icon: Trophy,
+      color: "from-pink-500 to-rose-600",
+      darkColor: "dark:from-pink-400 dark:to-rose-500",
     },
     {
       title: "Alumni & Senior Career Guidance",
@@ -174,6 +276,15 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════════════════════════════════════
+          WINNER SPOTLIGHT (Hall of Fame)
+      ═══════════════════════════════════════════════ */}
+      {winners.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-10 relative z-10 pb-16">
+          <WinnerSpotlight hydrated={{ winners }} />
+        </section>
+      )}
 
       {/* ═══════════════════════════════════════════════
           FEATURES GRID
