@@ -61,15 +61,7 @@ export default function RegisterForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <p className="text-red-600">{error}</p>}
           {success && <p className="text-green-600">{success}</p>}
-          <label className="block">
-            <span className="text-gray-700">Candidate Photo (optional)</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-white file:bg-[#FF6B35] hover:file:bg-[#FF79C6]"
-            />
-          </label>
+
           <button
             type="submit"
             disabled={loading}
