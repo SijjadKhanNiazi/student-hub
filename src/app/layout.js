@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import "./globals.css";
 import ThemeProvider from "./theme-provider";
 import { plusJakartaSans, inter } from "./fonts";
+import { Analytics } from "@vercel/analytics/next";
 import WinnerSpotlight from "./components/WinnerSpotlight";
 
 export const metadata = {
@@ -36,6 +37,7 @@ export default function RootLayout({ children }) {
                   </span>
                 </p>
               </div>
+              <Analytics />
             </footer>
           </ThemeProvider>
         </body>
